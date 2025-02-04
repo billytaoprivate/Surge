@@ -2,14 +2,15 @@
 DOMAIN-SUFFIX,duolingo.com
 DOMAIN-SUFFIX,microsoft.com
 DOMAIN-SUFFIX,jpvyyr.xyz   //Nexitally subscription web//
+DOMAIN-KEYWORD,jpush.cn //////test domain keywords
 DOMAIN,imgupload.bj.bcebos.com   //Weixin Quanlaidian Application login web.//
 DOMAIN,errnewlog.umeng.com   //Audi APP Needed
 DOMAIN,resolve.umeng.com   //Audi APP Needed
 DOMAIN,cnlogs.umeng.com   //Audi APP Needed
-DOMAIN,tsis-ipv6.jpush.cn   //Audi APP Needed
-DOMAIN,tsis.jpush.cn   //Audi APP Needed
-DOMAIN,s.jpush.cn   //Audi APP Needed
-DOMAIN,sis.jpush.io   //Audi APP Needed
-DOMAIN,ali-stats.jpush.cn   //Audi APP Needed
-DOMAIN,stats.jpush.cn   //Audi APP Needed
-DOMAIN,stats-ipv6.jpush.cn   //Audi APP Needed
+//DOMAIN,tsis-ipv6.jpush.cn   //Audi APP Needed
+//DOMAIN,tsis.jpush.cn   //Audi APP Needed
+//DOMAIN,s.jpush.cn   //Audi APP Needed
+//DOMAIN,sis.jpush.io   //Audi APP Needed
+//DOMAIN,ali-stats.jpush.cn   //Audi APP Needed
+//DOMAIN,stats.jpush.cn   //Audi APP Needed
+//DOMAIN,stats-ipv6.jpush.cn   //Audi APP Needed

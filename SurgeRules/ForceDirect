@@ -1,4 +1,5 @@
 #ForctDirect
-DOMAIN-SUFFIX,microsoft.com
+DOMAIN-SUFFIX,microsoft.com    //MS Service
+DOMAIN-SUFFIX,in.appcenter.ms //MS Service
 DOMAIN-SUFFIX,jpvyyr.xyz   //Nexitally subscription web//
 DOMAIN,imgupload.bj.bcebos.com   //Weixin Quanlaidian Application login web.//

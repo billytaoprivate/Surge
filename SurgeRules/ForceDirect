@@ -4,3 +4,5 @@ DOMAIN,imgupload.bj.bcebos.com   //Weixin Quanlaidian Application login web.//
 DOMAIN-SUFFIX,e-chinalife.com  //中英人寿微信客户端，被final了，所以加到这里。//
 DOMAIN-SUFFIX,faw-vw.com // Audi cloud server
 DOMAIN-SUFFIX,universalbeijingresort.com //北京环球
+DOMAIN-SUFFIX,JPush.cn // Audi
+DOMAIN-SUFFIX,UMeng.com // Audi

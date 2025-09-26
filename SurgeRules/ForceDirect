@@ -1,13 +1,13 @@
 #ForctDirect
-DOMAIN-SUFFIX,jpvyyr.xyz   //Nexitally subscription web//
-DOMAIN,imgupload.bj.bcebos.com   //Weixin Quanlaidian Application login 
-DOMAIN-SUFFIX,faw-vw.com // Audi cloud server
-DOMAIN-SUFFIX,JPush.cn // Audi
-DOMAIN-SUFFIX,UMeng.com // Audi
-DOMAIN-SUFFIX,cmpassport.com //Audi
-DOMAIN-SUFFIX,amap.com //Audi
-DOMAIN-SUFFIX,easytomessage.com //Audi
-DOMAIN-SUFFIX,sis.jpush.io //Audi
-DOMAIN-SUFFIX,marriott.com //
-DOMAIN-SUFFIX,omtrdc.net//marriott app
-DOMAIN-SUFFIX,jd.com//JD
+DOMAIN-SUFFIX,jpvyyr.xyz   #Nexitally subscription web//
+DOMAIN,imgupload.bj.bcebos.com   #Weixin Quanlaidian Application login 
+DOMAIN-SUFFIX,faw-vw.com    #Audi cloud server
+DOMAIN-SUFFIX,JPush.cn    #Audi
+DOMAIN-SUFFIX,UMeng.com    #Audi
+DOMAIN-SUFFIX,cmpassport.com #Audi
+DOMAIN-SUFFIX,amap.com #Audi
+DOMAIN-SUFFIX,easytomessage.com #Audi
+DOMAIN-SUFFIX,sis.jpush.io #Audi
+DOMAIN-SUFFIX,marriott.com #marriott app
+DOMAIN-SUFFIX,omtrdc.net    
+DOMAIN-SUFFIX,jd.com    #JD

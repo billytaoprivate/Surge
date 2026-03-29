@@ -1,14 +1,8 @@
-#!name=面板-机场信息
-#!desc=流量信息/智能提醒/到期日期
-#!system=ios
-#!category=面板模块
+[Script]
+my-sub_a = type=generic,timeout=20,script-path=my_sub_info.js,argument=url="去除引号，转换后的nexi订阅地址"&name=Nexitally
+
+my-sub_b = type=generic,timeout=20,script-path=my_sub_info.js,argument=url=“去除引号，转换后的flower订阅地址”&name=Flower
 
 [Panel]
-Sub-info = script-name=1号机场,update-interval=7200
-
-Sub-info = script-name=2号机场,update-interval=7200
-
-[Script]
-1号机场 = type=generic,timeout=5,script-path=https://raw.githubusercontent.com/cnbizha13/Surge/refs/heads/main/Sub-info,script-update-interval=86400,argument=url=编码后的订阅链接&title=机场名字&reset_day=重置日期&icon=tornado&color=#DF4688
-
-2号机场 = type=generic,timeout=5,script-path=https://raw.githubusercontent.com/cnbizha13/Surge/refs/heads/main/Sub-info,script-update-interval=86400,argument=url=编码后的订阅链接&title=机场名字&reset_day=重置日期&icon=waveform&color=#EF6D20
+机场信息A = script-name=my-sub_a,title=正在加载,content=读取中...,update-interval=3600
+机场信息B = script-name=my-sub_b,title=正在加载,content=读取中...,update-interval=3600

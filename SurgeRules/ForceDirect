@@ -11,8 +11,5 @@ DOMAIN-SUFFIX,cmpassport.com
 DOMAIN-SUFFIX,amap.com
 DOMAIN-SUFFIX,easytomessage.com
 DOMAIN-SUFFIX,sis.jpush.io
-#marriott app
-DOMAIN-SUFFIX,marriott.com
-DOMAIN-SUFFIX,omtrdc.net
 #JD
 DOMAIN-SUFFIX,jd.com

@@ -1,9 +1,6 @@
 /*
- * Gemini & Google Region Detection (Pro Version)
- * 逻辑：
- * 1. 访问 google.com/generate_204 (Google 连通性测试接口)。
- * 2. 暴力扫描所有响应头，提取 Google 内部定义的 x-goog-ext-XXXX-ad-country。
- * 3. 访问 Gemini 主页验证可用性。
+ * Gemini & Google Region Detection (YouTube Standard)
+ * 逻辑：完全复刻 YouTube Premium 检测脚本的逻辑，通过 YouTube 接口获取 GL 标志位。
  */
 
 const USER_AGENT = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1';
@@ -15,8 +12,8 @@ let result = {
 
 async function check() {
     try {
-        // 并行请求：可用性检测 & 地区定位
-        await Promise.all([checkGemini(), checkGoogleRegion()]);
+        // 使用两个最稳定的 Google 接口并行检测
+        await Promise.all([checkGemini(), checkGoogleLocation()]);
     } catch (e) {
         console.log("脚本执行异常: " + e);
     } finally {
@@ -29,53 +26,50 @@ async function check() {
     }
 }
 
-// 核心逻辑：精准提取 Google 内部地区代码
-function checkGoogleRegion() {
+// 核心：复刻 YouTube 检测逻辑
+function checkGoogleLocation() {
     return new Promise((resolve) => {
+        // 访问 YouTube Premium 页面，这是 Google 地理位置识别最严苛的地方
         const options = {
-            url: 'https://www.google.com/generate_204',
+            url: 'https://www.youtube.com/premium',
             headers: { 'User-Agent': USER_AGENT }
         };
 
         $httpClient.get(options, (error, response, data) => {
             if (error) {
-                result.region = "网络请求失败";
+                result.region = "网络连接失败";
                 return resolve();
             }
 
-            let code = "";
-            // 遍历所有 Header，寻找 Google 隐藏的 ad-country 字段
-            for (let key in response.headers) {
-                const lowerKey = key.toLowerCase();
-                // 常见的 Google 地区 Header 模式
-                if (lowerKey.includes('ad-country') || lowerKey === 'x-fb-ad-country') {
-                    code = response.headers[key];
-                    break;
-                }
-            }
-
-            if (code) {
-                result.region = formatRegion(code.toUpperCase());
+            // 1. 尝试从响应头提取（YouTube 专用）
+            let countryCode = response.headers['X-Goog-VisitorId'] || 
+                              response.headers['x-goog-visitorid'] || 
+                              "";
+            
+            // 2. 尝试从 body 提取 "GL" 标志位（这是 YouTube 脚本最准的一招）
+            // Google 会在页面中注入 "COUNTRY_CODE": "JP"
+            const glMatch = data.match(/"COUNTRY_CODE"\s*:\s*"([^"]+)"/) || 
+                            data.match(/"gl"\s*:\s*"([^"]+)"/);
+            
+            if (glMatch && glMatch[1]) {
+                result.region = formatRegion(glMatch[1].toUpperCase());
             } else {
-                // 如果 Header 没抓到，尝试看是否有跳转到后缀域名 (如 google.co.jp)
-                const location = response.headers['Location'] || response.headers['location'];
-                if (location) {
-                    const match = location.match(/\.google\.([a-z\.]+)/);
-                    if (match && match[1] !== 'com') {
-                        result.region = match[1].toUpperCase();
-                    } else {
-                        result.region = "US / Global";
+                // 3. 兜底：地毯式扫描所有 ad-country Header
+                let adCountry = "";
+                for (let key in response.headers) {
+                    if (key.toLowerCase().includes('ad-country')) {
+                        adCountry = response.headers[key];
+                        break;
                     }
-                } else {
-                    result.region = "无法解析 (可能是 NCR 模式)";
                 }
+                result.region = adCountry ? formatRegion(adCountry.toUpperCase()) : "US (Fallback)";
             }
             resolve();
         });
     });
 }
 
-// 可用性检测
+// 检测 Gemini 可用性
 function checkGemini() {
     return new Promise((resolve) => {
         const options = {
@@ -95,7 +89,6 @@ function checkGemini() {
     });
 }
 
-// 地区代码格式化
 function formatRegion(code) {
     const map = {
         'JP': 'JP (日本)',
@@ -103,8 +96,8 @@ function formatRegion(code) {
         'HK': 'HK (香港)',
         'SG': 'SG (新加坡)',
         'TW': 'TW (台湾)',
-        'UK': 'UK (英国)',
-        'KR': 'KR (韩国)'
+        'GB': 'UK (英国)',
+        'DE': 'DE (德国)'
     };
     return map[code] || code;
 }

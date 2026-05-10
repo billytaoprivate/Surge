@@ -1,46 +1,69 @@
 /*
- * Gemini Availability Check
- * Adapted from community patterns (KOP-XIAO / Tartarus style)
+ * Gemini 可用性及区域检测脚本
+ * 逻辑：
+ * 1. 访问 Gemini 主页判断是否被重定向或返回不支持提示。
+ * 2. 访问 Cloudflare Trace 接口获取出口 IP 真实所在的国家/地区代码。
  */
 
-const options = {
-    url: 'https://gemini.google.com/app',
-    headers: {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-    }
+const GEMINI_URL = 'https://gemini.google.com/app';
+const REGION_URL = 'https://www.cloudflare.com/cdn-cgi/trace';
+const USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
+
+let result = {
+    status: "检测中...",
+    region: "未知"
 };
 
-$httpClient.get(options, function(error, response, data) {
-    let status = "";
-    let region = "未知";
-
-    if (error) {
-        status = "检测失败 (网络错误)";
-    } else {
-        // 核心逻辑：Gemini 在不支持的地区会跳转至 /unsupported_country
-        // 或者在页面源码中包含 "not available in your country"
-        if (response.status === 200 && !data.includes("unsupported_country") && !data.includes("not available")) {
-            status = "✅ 可用";
-            // 尝试从 Google 的响应头获取识别的地区代码
-            region = response.headers['x-goog-ext-277772664-ad-country'] || 
-                     response.headers['X-Goog-VisitorId'] || 
-                     "已授权区域";
-        } else if (response.status === 403 || data.includes("unsupported_country")) {
-            status = "❌ 不支持该区域";
-        } else {
-            status = "⚠️ 状态异常";
-        }
-    }
-
-    // 获取 Google 识别的 IP 归属地（可选增强逻辑）
-    $httpClient.get('https://www.google.com/generate_204', function(e, r, d) {
-        let googleRegion = r ? (r.headers['x-fb-ad-country'] || r.headers['cf-ipcountry'] || "未知") : "未知";
-        
+// 发起并行请求
+async function check() {
+    try {
+        await Promise.all([checkAvailability(), getRegion()]);
+    } catch (e) {
+        console.log("检测出错: " + e);
+    } finally {
         $done({
             title: "Google Gemini 状态",
-            content: `可用性: ${status}\n识别地区: ${googleRegion.toUpperCase()}`,
+            content: `可用性: ${result.status}\n识别地区: ${result.region}`,
             icon: "sparkles.system",
-            "icon-color": status.includes("✅") ? "#4285F4" : "#FF5252"
+            "icon-color": result.status === "✅ 可用" ? "#4285F4" : "#FF5252"
+        });
+    }
+}
+
+// 检测 Gemini 可用性
+function checkAvailability() {
+    return new Promise((resolve) => {
+        const options = {
+            url: GEMINI_URL,
+            headers: { 'User-Agent': USER_AGENT }
+        };
+        $httpClient.get(options, (error, response, data) => {
+            if (error) {
+                result.status = "❌ 连接失败";
+            } else if (response.status === 200 && !data.includes("unsupported_country") && !data.includes("not available")) {
+                result.status = "✅ 可用";
+            } else {
+                result.status = "❌ 不支持该区域";
+            }
+            resolve();
         });
     });
-});
+}
+
+// 获取出口 IP 地区（使用 Cloudflare 接口，结果最准确）
+function getRegion() {
+    return new Promise((resolve) => {
+        $httpClient.get(REGION_URL, (error, response, data) => {
+            if (!error && data) {
+                // 从数据中提取 loc=XX 字段
+                const loc = data.match(/loc=(.+)/);
+                if (loc && loc[1]) {
+                    result.region = loc[1].toUpperCase();
+                }
+            }
+            resolve();
+        });
+    });
+}
+
+check();

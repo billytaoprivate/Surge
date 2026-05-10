@@ -1,8 +1,6 @@
 /*
- * Gemini 综合可用性检测 (Surge 面板)
- * 1. Web 检测: 验证浏览器访问 gemini.google.com 的权限。
- * 2. App API 检测: 模拟 App 调用接口，识别 IP 是否被 Google App 封杀。
- * 3. 地区检测: 复刻 YouTube Premium 逻辑，抓取 Google 认定的真实地域。
+ * Gemini 综合检测脚本 (V7 修正版)
+ * 修正了 API 403 状态码的误报问题，通过解析响应体来判断真实可用性。
  */
 
 const USER_AGENT = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1';
@@ -21,7 +19,7 @@ async function check() {
             checkGoogleRegion()
         ]);
     } catch (e) {
-        console.log("检测脚本报错: " + e);
+        console.log("检测脚本异常: " + e);
     } finally {
         $done({
             title: "Google Gemini 状态",
@@ -32,7 +30,7 @@ async function check() {
     }
 }
 
-// 1. 检测浏览器网页版状态
+// 1. 网页版检测
 function checkGeminiWeb() {
     return new Promise((resolve) => {
         const options = {
@@ -52,32 +50,40 @@ function checkGeminiWeb() {
     });
 }
 
-// 2. 检测 App 核心 API 状态 (判断 IP 纯净度)
+// 2. App API 检测 (修复 403 误报逻辑)
 function checkGeminiAPI() {
     return new Promise((resolve) => {
-        // 请求 Gemini App 使用的底层模型列表接口 (即便不带 API Key，也能通过返回码判断 IP 权限)
         const options = {
             url: 'https://generativelanguage.googleapis.com/v1beta/models',
-            headers: { 'User-Agent': 'Gemini/1.0' }
+            headers: { 
+                'User-Agent': USER_AGENT,
+                'Content-Type': 'application/json'
+            }
         };
         $httpClient.get(options, (error, response, data) => {
             if (error) {
                 result.api = "❌ 连接失败";
-            } else if (response.status === 400 || response.status === 401) {
-                // 返回 400/401 说明 IP 已通过区域审计，只是没权限访问具体资源，App 正常可用
-                result.api = "✅ 可用";
-            } else if (response.status === 403) {
-                // 返回 403 通常意味着 IP 被列入代理黑名单或区域限制，App 会提示不支持
-                result.api = "❌ IP 受限/机房灰名单";
             } else {
-                result.api = `⚠️ 异常 (${response.status})`;
+                // 如果返回 403，我们需要检查具体报错内容
+                if (response.status === 403) {
+                    if (data && data.includes("location is not supported")) {
+                        result.api = "❌ 区域不支持 (API)";
+                    } else {
+                        // 如果只是因为没 Key，说明 IP 已经通过了地理位置审计
+                        result.api = "✅ 可用";
+                    }
+                } else if (response.status === 400 || response.status === 401 || response.status === 200) {
+                    result.api = "✅ 可用";
+                } else {
+                    result.api = `⚠️ 状态未知 (${response.status})`;
+                }
             }
             resolve();
         });
     });
 }
 
-// 3. 检测 Google 认定的地域 (复刻 YouTube 逻辑)
+// 3. 地区检测 (继续复刻 YouTube 逻辑)
 function checkGoogleRegion() {
     return new Promise((resolve) => {
         const options = {
